@@ -1,6 +1,18 @@
+/*
+=============================================================================
+	Create Gold Views:
+	This script creates views for the Gold layer in the data warehouse. 
+    The Gold layer represents the final dimension and fact tables (Star Schema)
+=============================================================================
+*/
 
--- CREATING A VIEW FOR CUSTOMER INFORMATION
-
+-- =============================================================================
+-- Create Dimension: gold.dim_customers
+-- =============================================================================
+IF OBJECT_ID('gold.dim_customers', 'V') IS NOT NULL
+    DROP VIEW gold.dim_customers;
+GO
+	
 CREATE OR ALTER VIEW gold.dim_customers AS 
 SELECT
 	ROW_NUMBER() OVER(ORDER BY ci.cust_id) AS customer_key,
@@ -22,10 +34,15 @@ LEFT JOIN silver.erp_cust_az12 ca
 LEFT JOIN silver.erp_loc_a101 la
 	ON ci.cst_key = la.cid
 
+GO
 
-
--- CREATING VIEW FOR PRODUCT INFORMATION
-
+-- =============================================================================
+-- Create Dimension: gold.dim_products
+-- =============================================================================
+IF OBJECT_ID('gold.dim_products', 'V') IS NOT NULL
+    DROP VIEW gold.dim_products;
+GO
+	
 CREATE OR ALTER VIEW gold.dim_products AS
 SELECT
 	ROW_NUMBER() OVER(ORDER BY p.prd_start_dt, p.prd_key) AS product_key,
@@ -48,7 +65,14 @@ LEFT JOIN silver.erp_px_cat_g1v2 pcg
 ON p.cat_id = pcg.id
 WHERE p.prd_end_dt IS NULL -- FILTER OUT ALL HISTORICAL DATA
 
--- CREATE VIEW FOR SALES INFORMATION
+GO
+	
+-- =============================================================================
+-- Create Fact Table: gold.fact_sales
+-- =============================================================================
+IF OBJECT_ID('gold.fact_sales', 'V') IS NOT NULL
+    DROP VIEW gold.fact_sales;
+GO
 
 CREATE OR ALTER VIEW gold.fact_sales AS 
 SELECT
