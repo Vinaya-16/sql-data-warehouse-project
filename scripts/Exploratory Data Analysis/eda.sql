@@ -205,10 +205,10 @@ ORDER BY total_revenue DESC
 
 -- FIND THE TOP 3 CUSTOMERS WITH FEWEST ORDERS PLACED
 SELECT TOP 3
+COUNT(DISTINCT f.order_number) AS total_orders,
 c.customer_key,
 c.first_name,
-c.last_name,
-COUNT(DISTINCT f.order_number) AS total_orders
+c.last_name
 FROM gold.fact_sales f
 LEFT JOIN gold.dim_customers c
 ON c.customer_key = f.customer_key
