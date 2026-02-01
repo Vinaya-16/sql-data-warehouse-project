@@ -158,7 +158,3 @@ Type_of_customer,
 COUNT(customer_key) AS total_customers
 FROM customers_segments
 GROUP BY Type_of_customer
-
-
-
-
