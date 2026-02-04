@@ -21,6 +21,7 @@ Highlights:
 =======================================================================================
 */
 
+CREATE VIEW gold.report_customers AS
 WITH base_query AS
 (
 -- BASE QUERY FOR CORE RECORDS
@@ -38,8 +39,8 @@ WITH base_query AS
 	LEFT JOIN gold.dim_customers c
 	ON c.customer_key = f.customer_key
 	WHERE f.order_date IS NOT NULL
-)
-, customer_aggregations AS
+),
+customer_aggregations AS
 (
 	SELECT
 		customer_key,
@@ -51,7 +52,7 @@ WITH base_query AS
 		MAX(order_date) AS last_order,
 		SUM(quantity) AS total_quantity,
 		SUM(sales_amount) AS total_sales,
-		CONCAT(DATEDIFF(MONTH, MIN(order_date), MAX(order_date)) , ' months') AS lifespan
+		DATEDIFF(MONTH, MIN(order_date), MAX(order_date)) AS lifespan
 	FROM base_query
 	GROUP BY 
 		customer_key,
@@ -72,17 +73,27 @@ SELECT
 		ELSE 'Above 80'
 	END AS age_group,
 	CASE 
-		WHEN SUM(total_sales) > 5000 AND lifespan >= 12
+		WHEN total_sales > 5000 AND lifespan >= 12
 			THEN 'VIP'
-		WHEN SUM(total_sales) <= 5000 AND lifespan >= 12
+		WHEN total_sales <= 5000 AND lifespan >= 12
 			THEN 'Regular'
 		ELSE 'New'
 	END Type_of_customer,
+	DATEDIFF(MONTH, last_order, GETDATE()) AS recency,
 	total_orders,
 	total_products,
 	last_order,
 	total_quantity,
 	total_sales,
-	lifespan
+	lifespan AS lifespan_months,
+	CASE 
+		WHEN total_sales = 0 THEN 0
+		WHEN total_orders = 0 THEN 0
+		ELSE total_sales/total_orders 
+	END AS avg_order_value,
+	CASE 
+		WHEN total_sales = 0 THEN 0
+		WHEN lifespan = 0 THEN 0
+		ELSE total_sales/lifespan
+	END AS avg_monthly_spend 
 FROM customer_aggregations
-GROUP B
